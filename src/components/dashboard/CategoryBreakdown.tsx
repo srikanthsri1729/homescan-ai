@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface CategoryBreakdownProps {
-  data: { category: string; count: number; value: number }[];
+  data: { name: string; value: number; color: string }[];
 }
 
 const COLORS = [
@@ -28,51 +28,57 @@ export function CategoryBreakdown({ data }: CategoryBreakdownProps) {
         <p className="text-sm text-muted-foreground">Items by category</p>
       </div>
 
-      <div className="flex items-center gap-6">
-        <div className="h-40 w-40 flex-shrink-0">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={45}
-                outerRadius={70}
-                paddingAngle={2}
-                dataKey="count"
-              >
-                {data.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                  fontSize: '12px',
-                }}
-                formatter={(value: number, _, entry) => [`${value} items`, entry.payload.category]}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+      {data.length === 0 ? (
+        <div className="h-40 flex items-center justify-center text-muted-foreground">
+          No items to display
         </div>
-
-        <div className="flex-1 space-y-2">
-          {data.slice(0, 5).map((item, index) => (
-            <div key={item.category} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div 
-                  className="h-3 w-3 rounded-full" 
-                  style={{ backgroundColor: COLORS[index % COLORS.length] }}
+      ) : (
+        <div className="flex items-center gap-6">
+          <div className="h-40 w-40 flex-shrink-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={45}
+                  outerRadius={70}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  {data.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color || COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--card))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                  }}
+                  formatter={(value: number, _, entry) => [`${value} items`, entry.payload.name]}
                 />
-                <span className="text-sm">{item.category}</span>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="flex-1 space-y-2">
+            {data.slice(0, 5).map((item, index) => (
+              <div key={item.name} className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div 
+                    className="h-3 w-3 rounded-full" 
+                    style={{ backgroundColor: item.color || COLORS[index % COLORS.length] }}
+                  />
+                  <span className="text-sm">{item.name}</span>
+                </div>
+                <span className="text-sm font-medium">{item.value}</span>
               </div>
-              <span className="text-sm font-medium">{item.count}</span>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </motion.div>
   );
 }

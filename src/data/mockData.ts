@@ -1,136 +1,27 @@
-import { InventoryItem } from '@/types/inventory';
+import { ItemCategory } from '@/types/inventory';
 
-export const mockItems: InventoryItem[] = [
-  {
-    id: '1',
-    name: 'Organic Milk',
-    category: 'beverages',
-    quantity: 2,
-    unit: 'liters',
-    location: 'Refrigerator',
-    purchaseDate: '2024-12-01',
-    expiryDate: '2024-12-10',
-    price: 4.99,
-    imageUrl: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=200&h=200&fit=crop',
-    createdAt: '2024-12-01T10:00:00Z',
-    updatedAt: '2024-12-01T10:00:00Z',
-  },
-  {
-    id: '2',
-    name: 'Whole Wheat Bread',
-    category: 'food',
-    quantity: 1,
-    unit: 'loaf',
-    location: 'Pantry',
-    purchaseDate: '2024-11-30',
-    expiryDate: '2024-12-07',
-    price: 3.49,
-    imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=200&h=200&fit=crop',
-    createdAt: '2024-11-30T09:00:00Z',
-    updatedAt: '2024-11-30T09:00:00Z',
-  },
-  {
-    id: '3',
-    name: 'All-Purpose Cleaner',
-    category: 'cleaning',
-    quantity: 3,
-    unit: 'bottles',
-    location: 'Utility Room',
-    purchaseDate: '2024-11-15',
-    price: 5.99,
-    imageUrl: 'https://images.unsplash.com/photo-1585421514284-efb74c2b69ba?w=200&h=200&fit=crop',
-    createdAt: '2024-11-15T14:00:00Z',
-    updatedAt: '2024-11-15T14:00:00Z',
-  },
-  {
-    id: '4',
-    name: 'Shampoo',
-    category: 'personal-care',
-    quantity: 1,
-    unit: 'bottle',
-    location: 'Bathroom',
-    purchaseDate: '2024-11-20',
-    price: 8.99,
-    imageUrl: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?w=200&h=200&fit=crop',
-    createdAt: '2024-11-20T11:00:00Z',
-    updatedAt: '2024-11-20T11:00:00Z',
-  },
-  {
-    id: '5',
-    name: 'AA Batteries',
-    category: 'electronics',
-    quantity: 8,
-    unit: 'pack',
-    location: 'Office Drawer',
-    purchaseDate: '2024-10-15',
-    price: 12.99,
-    imageUrl: 'https://images.unsplash.com/photo-1619641805634-a1c6a55de93c?w=200&h=200&fit=crop',
-    createdAt: '2024-10-15T16:00:00Z',
-    updatedAt: '2024-10-15T16:00:00Z',
-  },
-  {
-    id: '6',
-    name: 'Greek Yogurt',
-    category: 'food',
-    quantity: 4,
-    unit: 'cups',
-    location: 'Refrigerator',
-    purchaseDate: '2024-12-02',
-    expiryDate: '2024-12-15',
-    price: 6.49,
-    imageUrl: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=200&h=200&fit=crop',
-    createdAt: '2024-12-02T08:00:00Z',
-    updatedAt: '2024-12-02T08:00:00Z',
-  },
-  {
-    id: '7',
-    name: 'Olive Oil',
-    category: 'kitchen',
-    quantity: 1,
-    unit: 'bottle',
-    location: 'Pantry',
-    purchaseDate: '2024-11-01',
-    price: 14.99,
-    imageUrl: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=200&h=200&fit=crop',
-    createdAt: '2024-11-01T10:00:00Z',
-    updatedAt: '2024-11-01T10:00:00Z',
-  },
-  {
-    id: '8',
-    name: 'Ibuprofen',
-    category: 'medicine',
-    quantity: 50,
-    unit: 'tablets',
-    location: 'Medicine Cabinet',
-    purchaseDate: '2024-09-15',
-    expiryDate: '2026-09-15',
-    price: 9.99,
-    imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200&h=200&fit=crop',
-    createdAt: '2024-09-15T12:00:00Z',
-    updatedAt: '2024-09-15T12:00:00Z',
-  },
-];
+export interface MockItem {
+  id: string;
+  name: string;
+  category: ItemCategory;
+  quantity: number;
+  unit: string;
+  location: string;
+  purchaseDate?: string;
+  expiryDate?: string;
+  price?: number;
+  imageUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const mockItems: MockItem[] = [];
 
 export const mockAnalytics = {
-  totalItems: 45,
-  totalValue: 1247.50,
-  lowStockItems: 5,
-  expiringItems: 3,
-  categoryBreakdown: [
-    { category: 'Food', count: 15, value: 280 },
-    { category: 'Beverages', count: 8, value: 95 },
-    { category: 'Cleaning', count: 6, value: 120 },
-    { category: 'Personal Care', count: 5, value: 185 },
-    { category: 'Electronics', count: 4, value: 320 },
-    { category: 'Kitchen', count: 4, value: 150 },
-    { category: 'Medicine', count: 3, value: 97.50 },
-  ],
-  monthlySpend: [
-    { month: 'Jul', spend: 145 },
-    { month: 'Aug', spend: 198 },
-    { month: 'Sep', spend: 167 },
-    { month: 'Oct', spend: 223 },
-    { month: 'Nov', spend: 289 },
-    { month: 'Dec', spend: 225.50 },
-  ],
+  totalItems: 0,
+  totalValue: 0,
+  lowStockItems: 0,
+  expiringItems: 0,
+  categoryBreakdown: [],
+  monthlySpend: [],
 };

@@ -123,6 +123,7 @@ export function useProfile() {
     settings,
     loadingProfile,
     loadingSettings,
+    isLoading: loadingProfile || loadingSettings,
     updateProfile,
     updateSettings,
     uploadAvatar,
