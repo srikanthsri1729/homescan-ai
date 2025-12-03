@@ -411,6 +411,10 @@ export type Database = {
         | "electronics"
         | "documents"
         | "other"
+        | "kitchen"
+        | "furniture"
+        | "clothing"
+        | "office"
       notification_type: "low_stock" | "expiry" | "warranty" | "system"
       transaction_type: "purchase" | "use" | "adjust" | "expire"
     }
@@ -551,6 +555,10 @@ export const Constants = {
         "electronics",
         "documents",
         "other",
+        "kitchen",
+        "furniture",
+        "clothing",
+        "office",
       ],
       notification_type: ["low_stock", "expiry", "warranty", "system"],
       transaction_type: ["purchase", "use", "adjust", "expire"],

@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface SpendChartProps {
-  data: { month: string; spend: number }[];
+  data: { month: string; amount: number }[];
 }
 
 export function SpendChart({ data }: SpendChartProps) {
@@ -51,7 +51,7 @@ export function SpendChart({ data }: SpendChartProps) {
             />
             <Area
               type="monotone"
-              dataKey="spend"
+              dataKey="amount"
               stroke="hsl(174 72% 50%)"
               strokeWidth={2}
               fill="url(#spendGradient)"

@@ -1,38 +1,62 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Filter, Grid3X3, List, Plus, MoreHorizontal, AlertTriangle, Clock } from 'lucide-react';
+import { Search, Filter, Grid3X3, List, Plus, Loader2 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { InventoryItem, getCategoryInfo, CATEGORIES, ItemCategory } from '@/types/inventory';
-import { mockItems } from '@/data/mockData';
+import { CATEGORIES, ItemCategory } from '@/types/inventory';
 import { cn } from '@/lib/utils';
 import { AddItemDialog } from '@/components/inventory/AddItemDialog';
-
-function isExpiringSoon(expiryDate?: string): boolean {
-  if (!expiryDate) return false;
-  const daysUntilExpiry = Math.ceil(
-    (new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-  );
-  return daysUntilExpiry <= 7 && daysUntilExpiry >= 0;
-}
-
-function isLowStock(quantity: number): boolean {
-  return quantity <= 2;
-}
+import { EditItemDialog } from '@/components/inventory/EditItemDialog';
+import { ItemCard } from '@/components/inventory/ItemCard';
+import { ItemRow } from '@/components/inventory/ItemRow';
+import { useItems, Item } from '@/hooks/useItems';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function Inventory() {
+  const { items, isLoading, deleteItem, consumeItem } = useItems();
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ItemCategory | 'all'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [deletingItem, setDeletingItem] = useState<Item | null>(null);
 
-  const filteredItems = mockItems.filter(item => {
+  const filteredItems = items.filter(item => {
     const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.location.toLowerCase().includes(search.toLowerCase());
+      (item.location || '').toLowerCase().includes(search.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const handleDelete = async () => {
+    if (deletingItem) {
+      await deleteItem.mutateAsync(deletingItem.id);
+      setDeletingItem(null);
+    }
+  };
+
+  const handleConsume = async (item: Item, amount: number) => {
+    await consumeItem.mutateAsync({ id: item.id, amount });
+  };
+
+  if (isLoading) {
+    return (
+      <AppLayout>
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -95,36 +119,53 @@ export default function Inventory() {
             onClick={() => setSelectedCategory('all')}
             className={selectedCategory === 'all' ? 'gradient-primary text-primary-foreground' : ''}
           >
-            All Items
+            All Items ({items.length})
           </Button>
-          {CATEGORIES.map(category => (
-            <Button
-              key={category.id}
-              variant={selectedCategory === category.id ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setSelectedCategory(category.id)}
-              className={cn(
-                "gap-1.5",
-                selectedCategory === category.id && 'gradient-primary text-primary-foreground'
-              )}
-            >
-              <span>{category.icon}</span>
-              {category.name}
-            </Button>
-          ))}
+          {CATEGORIES.map(category => {
+            const count = items.filter(i => i.category === category.id).length;
+            return (
+              <Button
+                key={category.id}
+                variant={selectedCategory === category.id ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setSelectedCategory(category.id)}
+                className={cn(
+                  "gap-1.5",
+                  selectedCategory === category.id && 'gradient-primary text-primary-foreground'
+                )}
+              >
+                <span>{category.icon}</span>
+                {category.name} ({count})
+              </Button>
+            );
+          })}
         </div>
 
         {/* Items Grid/List */}
         {viewMode === 'grid' ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredItems.map((item, index) => (
-              <ItemCard key={item.id} item={item} index={index} />
+              <ItemCard 
+                key={item.id} 
+                item={item} 
+                index={index}
+                onEdit={() => setEditingItem(item)}
+                onDelete={() => setDeletingItem(item)}
+                onConsume={(amount) => handleConsume(item, amount)}
+              />
             ))}
           </div>
         ) : (
           <div className="space-y-2">
             {filteredItems.map((item, index) => (
-              <ItemRow key={item.id} item={item} index={index} />
+              <ItemRow 
+                key={item.id} 
+                item={item} 
+                index={index}
+                onEdit={() => setEditingItem(item)}
+                onDelete={() => setDeletingItem(item)}
+                onConsume={(amount) => handleConsume(item, amount)}
+              />
             ))}
           </div>
         )}
@@ -135,157 +176,53 @@ export default function Inventory() {
               <Search className="h-6 w-6 text-muted-foreground" />
             </div>
             <h3 className="font-semibold">No items found</h3>
-            <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
+            <p className="text-sm text-muted-foreground mb-4">
+              {items.length === 0 
+                ? "Start by adding your first item to your inventory" 
+                : "Try adjusting your search or filters"}
+            </p>
+            {items.length === 0 && (
+              <Button 
+                onClick={() => setIsAddDialogOpen(true)}
+                className="gap-2 gradient-primary text-primary-foreground"
+              >
+                <Plus className="h-4 w-4" />
+                Add Your First Item
+              </Button>
+            )}
           </div>
         )}
       </div>
 
       <AddItemDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen} />
+      
+      {editingItem && (
+        <EditItemDialog 
+          open={!!editingItem} 
+          onOpenChange={(open) => !open && setEditingItem(null)} 
+          item={editingItem}
+        />
+      )}
+
+      <AlertDialog open={!!deletingItem} onOpenChange={(open) => !open && setDeletingItem(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Item</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deletingItem?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
-  );
-}
-
-function ItemCard({ item, index }: { item: InventoryItem; index: number }) {
-  const category = getCategoryInfo(item.category);
-  const expiring = isExpiringSoon(item.expiryDate);
-  const lowStock = isLowStock(item.quantity);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.05 }}
-      className="group rounded-xl border border-border bg-card overflow-hidden hover:shadow-lg hover:shadow-primary/5 transition-all"
-    >
-      {/* Image */}
-      <div className="relative aspect-square bg-secondary overflow-hidden">
-        {item.imageUrl ? (
-          <img
-            src={item.imageUrl}
-            alt={item.name}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-4xl">
-            {category.icon}
-          </div>
-        )}
-        
-        {/* Badges */}
-        <div className="absolute top-2 left-2 flex flex-col gap-1">
-          {expiring && (
-            <span className="flex items-center gap-1 rounded-full bg-warning/90 px-2 py-0.5 text-xs font-medium text-warning-foreground">
-              <Clock className="h-3 w-3" />
-              Expiring
-            </span>
-          )}
-          {lowStock && (
-            <span className="flex items-center gap-1 rounded-full bg-destructive/90 px-2 py-0.5 text-xs font-medium text-destructive-foreground">
-              <AlertTriangle className="h-3 w-3" />
-              Low Stock
-            </span>
-          )}
-        </div>
-
-        {/* Actions */}
-        <Button
-          variant="secondary"
-          size="icon"
-          className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
-        >
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </div>
-
-      {/* Content */}
-      <div className="p-4">
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="font-semibold leading-tight">{item.name}</h3>
-          <span className={cn(
-            "flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-            "bg-secondary text-secondary-foreground"
-          )}>
-            {category.icon}
-          </span>
-        </div>
-        <p className="text-sm text-muted-foreground mb-3">{item.location}</p>
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">
-            {item.quantity} {item.unit}
-          </span>
-          {item.price && (
-            <span className="text-sm text-muted-foreground">
-              ${item.price.toFixed(2)}
-            </span>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
-function ItemRow({ item, index }: { item: InventoryItem; index: number }) {
-  const category = getCategoryInfo(item.category);
-  const expiring = isExpiringSoon(item.expiryDate);
-  const lowStock = isLowStock(item.quantity);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.03 }}
-      className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 hover:shadow-md transition-all"
-    >
-      {/* Image */}
-      <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-secondary">
-        {item.imageUrl ? (
-          <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-xl">
-            {category.icon}
-          </div>
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="font-medium truncate">{item.name}</p>
-          {expiring && (
-            <span className="flex items-center gap-1 text-xs text-warning">
-              <Clock className="h-3 w-3" /> Expiring
-            </span>
-          )}
-          {lowStock && (
-            <span className="flex items-center gap-1 text-xs text-destructive">
-              <AlertTriangle className="h-3 w-3" /> Low
-            </span>
-          )}
-        </div>
-        <p className="text-sm text-muted-foreground">{item.location}</p>
-      </div>
-
-      {/* Quantity */}
-      <div className="text-right">
-        <p className="font-medium">{item.quantity} {item.unit}</p>
-        {item.price && (
-          <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
-        )}
-      </div>
-
-      {/* Category */}
-      <div className={cn(
-        "flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium",
-        "bg-secondary text-secondary-foreground"
-      )}>
-        <span>{category.icon}</span>
-        <span className="hidden sm:inline">{category.name}</span>
-      </div>
-
-      {/* Actions */}
-      <Button variant="ghost" size="icon">
-        <MoreHorizontal className="h-4 w-4" />
-      </Button>
-    </motion.div>
   );
 }
