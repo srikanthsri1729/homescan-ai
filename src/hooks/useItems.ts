@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useHousehold } from './useHousehold';
 import { toast } from '@/hooks/use-toast';
 
-export type ItemCategory = 'food' | 'beverages' | 'cleaning' | 'personal' | 'medicine' | 'electronics' | 'documents' | 'other';
+export type ItemCategory = 'food' | 'beverages' | 'cleaning' | 'personal' | 'medicine' | 'electronics' | 'documents' | 'kitchen' | 'furniture' | 'clothing' | 'office' | 'other';
 
 export interface Item {
   id: string;
