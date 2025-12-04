@@ -1,27 +1,27 @@
-import { 
-  LayoutDashboard, 
-  Package, 
-  BarChart3, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Package,
+  BarChart3,
+  Settings,
   Camera,
   Bell,
   Users,
-  Home
-} from 'lucide-react';
-import { NavLink } from '@/components/NavLink';
-import { cn } from '@/lib/utils';
+  Home,
+} from "lucide-react";
+import { NavLink } from "@/components/NavLink";
+import { cn } from "@/lib/utils";
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-  { name: 'Inventory', href: '/inventory', icon: Package },
-  { name: 'Scan Item', href: '/scan', icon: Camera },
-  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-  { name: 'Notifications', href: '/notifications', icon: Bell },
-  { name: 'Household', href: '/household', icon: Users },
+  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Inventory", href: "/inventory", icon: Package },
+  { name: "Scan Item", href: "/scan", icon: Camera },
+  { name: "Analytics", href: "/analytics", icon: BarChart3 },
+  { name: "Notifications", href: "/notifications", icon: Bell },
+  { name: "Household", href: "/household", icon: Users },
 ];
 
 const bottomNavigation = [
-  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -75,15 +75,15 @@ export function AppSidebar() {
           ))}
 
           {/* User */}
-          <div className="mt-4 flex items-center gap-3 rounded-lg bg-sidebar-accent/50 px-3 py-2.5">
+          {/* <div className="mt-4 flex items-center gap-3 rounded-lg bg-sidebar-accent/50 px-3 py-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-medium">
               JD
             </div>
-            <div className="flex-1 min-w-0">
+            {<div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground truncate">John Doe</p>
               <p className="text-xs text-muted-foreground truncate">Home Inventory</p>
-            </div>
-          </div>
+            </div> }
+          </div> */}
         </div>
       </div>
     </aside>

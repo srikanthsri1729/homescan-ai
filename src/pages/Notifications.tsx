@@ -1,11 +1,20 @@
-import { useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Bell, Clock, AlertTriangle, Check, Trash2, Settings, Package, Loader2 } from 'lucide-react';
-import { AppLayout } from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { useNotifications, NotificationType } from '@/hooks/useNotifications';
-import { formatDistanceToNow } from 'date-fns';
+import { useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  Bell,
+  Clock,
+  AlertTriangle,
+  Check,
+  Trash2,
+  Settings,
+  Package,
+  Loader2,
+} from "lucide-react";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useNotifications, NotificationType } from "@/hooks/useNotifications";
+import { formatDistanceToNow } from "date-fns";
 
 const typeIcons: Record<NotificationType, typeof Bell> = {
   expiry: Clock,
@@ -15,32 +24,32 @@ const typeIcons: Record<NotificationType, typeof Bell> = {
 };
 
 const typeColors: Record<NotificationType, string> = {
-  expiry: 'text-warning bg-warning/10',
-  low_stock: 'text-destructive bg-destructive/10',
-  warranty: 'text-primary bg-primary/10',
-  system: 'text-muted-foreground bg-muted',
+  expiry: "text-warning bg-warning/10",
+  low_stock: "text-destructive bg-destructive/10",
+  warranty: "text-primary bg-primary/10",
+  system: "text-muted-foreground bg-muted",
 };
 
 export default function Notifications() {
-  const { 
-    notifications, 
-    isLoading, 
-    unreadCount, 
-    markAsRead, 
-    markAllAsRead, 
-    deleteNotification 
+  const {
+    notifications,
+    isLoading,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
+    deleteNotification,
   } = useNotifications();
 
   // Mark all as read when the page is opened
-  useEffect(() => {
-    if (unreadCount > 0) {
-      // Give user a moment to see the notifications before marking as read
-      const timer = setTimeout(() => {
-        markAllAsRead.mutate();
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (unreadCount > 0) {
+  //     // Give user a moment to see the notifications before marking as read
+  //     const timer = setTimeout(() => {
+  //       markAllAsRead.mutate();
+  //     }, 2000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, []);
 
   if (isLoading) {
     return (
@@ -60,14 +69,16 @@ export default function Notifications() {
           <div>
             <h1 className="text-2xl font-bold">Notifications</h1>
             <p className="text-muted-foreground">
-              {unreadCount > 0 ? `${unreadCount} unread notifications` : 'All caught up!'}
+              {unreadCount > 0
+                ? `${unreadCount} unread notifications`
+                : "All caught up!"}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => markAllAsRead.mutate()} 
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => markAllAsRead.mutate()}
               disabled={unreadCount === 0 || markAllAsRead.isPending}
             >
               <Check className="h-4 w-4 mr-1" />
@@ -87,13 +98,16 @@ export default function Notifications() {
                 <Bell className="h-6 w-6 text-muted-foreground" />
               </div>
               <h3 className="font-semibold">No notifications</h3>
-              <p className="text-sm text-muted-foreground">You're all caught up!</p>
+              <p className="text-sm text-muted-foreground">
+                You're all caught up!
+              </p>
             </div>
           ) : (
             notifications.map((notification, index) => {
               const Icon = typeIcons[notification.type] || Bell;
-              const colorClass = typeColors[notification.type] || typeColors.system;
-              
+              const colorClass =
+                typeColors[notification.type] || typeColors.system;
+
               return (
                 <motion.div
                   key={notification.id}
@@ -107,10 +121,12 @@ export default function Notifications() {
                       : "border-primary/20 bg-primary/5"
                   )}
                 >
-                  <div className={cn(
-                    "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg",
-                    colorClass
-                  )}>
+                  <div
+                    className={cn(
+                      "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg",
+                      colorClass
+                    )}
+                  >
                     <Icon className="h-5 w-5" />
                   </div>
 
@@ -121,9 +137,13 @@ export default function Notifications() {
                         <span className="h-2 w-2 rounded-full bg-primary" />
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">{notification.message}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {notification.message}
+                    </p>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                      {formatDistanceToNow(new Date(notification.created_at), {
+                        addSuffix: true,
+                      })}
                     </p>
                   </div>
 

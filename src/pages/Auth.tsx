@@ -1,37 +1,40 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Package, Mail, Lock, User, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
-import { z } from 'zod';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { Package, Mail, Lock, User, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
+import { z } from "zod";
 
 const signUpSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  displayName: z.string().min(2, 'Name must be at least 2 characters').optional(),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  displayName: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .optional(),
 });
 
 const signInSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
 });
 
 export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { signUp, signIn, user, loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && user) {
-      navigate('/');
+      navigate("/");
     }
   }, [user, loading, navigate]);
 
@@ -41,12 +44,16 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
-        const validation = signUpSchema.safeParse({ email, password, displayName: displayName || undefined });
+        const validation = signUpSchema.safeParse({
+          email,
+          password,
+          displayName: displayName || undefined,
+        });
         if (!validation.success) {
           toast({
-            title: 'Validation Error',
+            title: "Validation Error",
             description: validation.error.errors[0].message,
-            variant: 'destructive',
+            variant: "destructive",
           });
           setIsLoading(false);
           return;
@@ -54,33 +61,34 @@ export default function Auth() {
 
         const { error } = await signUp(email, password, displayName);
         if (error) {
-          if (error.message.includes('already registered')) {
+          if (error.message.includes("already registered")) {
             toast({
-              title: 'Account Exists',
-              description: 'This email is already registered. Please sign in instead.',
-              variant: 'destructive',
+              title: "Account Exists",
+              description:
+                "This email is already registered. Please sign in instead.",
+              variant: "destructive",
             });
           } else {
             toast({
-              title: 'Sign Up Failed',
+              title: "Sign Up Failed",
               description: error.message,
-              variant: 'destructive',
+              variant: "destructive",
             });
           }
         } else {
           toast({
-            title: 'Welcome!',
-            description: 'Your account has been created successfully.',
+            title: "Welcome!",
+            description: "Your account has been created successfully.",
           });
-          navigate('/');
+          navigate("/");
         }
       } else {
         const validation = signInSchema.safeParse({ email, password });
         if (!validation.success) {
           toast({
-            title: 'Validation Error',
+            title: "Validation Error",
             description: validation.error.errors[0].message,
-            variant: 'destructive',
+            variant: "destructive",
           });
           setIsLoading(false);
           return;
@@ -88,25 +96,25 @@ export default function Auth() {
 
         const { error } = await signIn(email, password);
         if (error) {
-          if (error.message.includes('Invalid login credentials')) {
+          if (error.message.includes("Invalid login credentials")) {
             toast({
-              title: 'Invalid Credentials',
-              description: 'The email or password you entered is incorrect.',
-              variant: 'destructive',
+              title: "Invalid Credentials",
+              description: "The email or password you entered is incorrect.",
+              variant: "destructive",
             });
           } else {
             toast({
-              title: 'Sign In Failed',
+              title: "Sign In Failed",
               description: error.message,
-              variant: 'destructive',
+              variant: "destructive",
             });
           }
         } else {
           toast({
-            title: 'Welcome back!',
-            description: 'You have signed in successfully.',
+            title: "Welcome back!",
+            description: "You have signed in successfully.",
           });
-          navigate('/');
+          navigate("/");
         }
       }
     } finally {
@@ -137,7 +145,7 @@ export default function Auth() {
             </div>
             <h1 className="text-2xl font-bold">Home Inventory</h1>
             <p className="text-muted-foreground mt-1">
-              {isSignUp ? 'Create your account' : 'Sign in to your account'}
+              {isSignUp ? "Create your account" : "Sign in to your account"}
             </p>
           </div>
 
@@ -200,10 +208,12 @@ export default function Auth() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isSignUp ? 'Creating account...' : 'Signing in...'}
+                  {isSignUp ? "Creating account..." : "Signing in..."}
                 </>
+              ) : isSignUp ? (
+                "Create Account"
               ) : (
-                isSignUp ? 'Create Account' : 'Sign In'
+                "Sign In"
               )}
             </Button>
           </form>
@@ -216,7 +226,7 @@ export default function Auth() {
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               {isSignUp
-                ? 'Already have an account? Sign in'
+                ? "Already have an account? Sign in"
                 : "Don't have an account? Sign up"}
             </button>
           </div>
