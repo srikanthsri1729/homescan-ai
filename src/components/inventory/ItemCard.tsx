@@ -19,6 +19,10 @@ const CATEGORY_INFO: Record<ItemCategory, { icon: string; name: string }> = {
   medicine: { icon: '💊', name: 'Medicine' },
   electronics: { icon: '📱', name: 'Electronics' },
   documents: { icon: '📄', name: 'Documents' },
+  kitchen: { icon: '🍳', name: 'Kitchen' },
+  furniture: { icon: '🛋️', name: 'Furniture' },
+  clothing: { icon: '👕', name: 'Clothing' },
+  office: { icon: '📎', name: 'Office' },
   other: { icon: '📦', name: 'Other' },
 };
 

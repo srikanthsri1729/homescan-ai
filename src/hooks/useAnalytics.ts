@@ -14,21 +14,25 @@ export interface AnalyticsData {
 }
 
 const CATEGORY_COLORS: Record<ItemCategory, string> = {
-  food: 'hsl(var(--chart-1))',
-  beverages: 'hsl(var(--chart-2))',
-  cleaning: 'hsl(var(--chart-3))',
-  personal: 'hsl(var(--chart-4))',
-  medicine: 'hsl(var(--chart-5))',
-  electronics: 'hsl(142, 76%, 36%)',
-  documents: 'hsl(45, 93%, 47%)',
-  other: 'hsl(var(--muted-foreground))',
+  food: 'hsl(0, 72%, 51%)',
+  beverages: 'hsl(200, 72%, 51%)',
+  cleaning: 'hsl(142, 76%, 36%)',
+  personal: 'hsl(262, 83%, 58%)',
+  medicine: 'hsl(0, 72%, 65%)',
+  electronics: 'hsl(220, 72%, 51%)',
+  documents: 'hsl(210, 72%, 51%)',
+  kitchen: 'hsl(38, 92%, 50%)',
+  furniture: 'hsl(30, 72%, 51%)',
+  clothing: 'hsl(320, 72%, 51%)',
+  office: 'hsl(45, 72%, 51%)',
+  other: 'hsl(174, 72%, 40%)',
 };
 
 export function useAnalytics() {
   const { currentHousehold } = useHousehold();
-  const { items } = useItems();
+  const { items, isLoading: itemsLoading } = useItems();
 
-  const { data: transactions } = useQuery({
+  const { data: transactions, isLoading: transactionsLoading } = useQuery({
     queryKey: ['transactions', currentHousehold?.id],
     queryFn: async () => {
       if (!currentHousehold) return [];
@@ -51,30 +55,30 @@ export function useAnalytics() {
 
   // Calculate analytics from items
   const analytics: AnalyticsData = {
-    totalItems: items.length,
-    totalValue: items.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0),
-    lowStockItems: items.filter(item => item.quantity <= item.low_stock_threshold).length,
-    expiringItems: items.filter(item => {
+    totalItems: items?.length || 0,
+    totalValue: items?.reduce((sum, item) => sum + (item.price || 0) * item.quantity, 0) || 0,
+    lowStockItems: items?.filter(item => item.quantity <= item.low_stock_threshold).length || 0,
+    expiringItems: items?.filter(item => {
       if (!item.expiry_date) return false;
       const daysUntilExpiry = Math.ceil(
         (new Date(item.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
       );
       return daysUntilExpiry <= 7 && daysUntilExpiry >= 0;
-    }).length,
-    categoryBreakdown: calculateCategoryBreakdown(items),
+    }).length || 0,
+    categoryBreakdown: calculateCategoryBreakdown(items || []),
     monthlySpend: calculateMonthlySpend(transactions || []),
     recentTransactions: (transactions || []).slice(0, 10).map(t => ({
       id: t.id,
-      item_name: t.items?.name || 'Unknown',
+      item_name: (t.items as any)?.name || 'Unknown',
       type: t.type,
-      delta: t.delta,
-      created_at: t.created_at,
+      delta: Number(t.delta),
+      created_at: t.created_at || '',
     })),
   };
 
   return {
     analytics,
-    isLoading: !items,
+    isLoading: itemsLoading || transactionsLoading,
   };
 }
 
@@ -110,7 +114,7 @@ function calculateMonthlySpend(transactions: any[]): { month: string; amount: nu
       const date = new Date(t.created_at);
       const key = date.toLocaleDateString('en-US', { month: 'short' });
       if (key in monthlyTotals) {
-        monthlyTotals[key] += Math.abs(t.delta) * 10; // Estimate value per unit
+        monthlyTotals[key] += Math.abs(Number(t.delta)) * 10; // Estimate value per unit
       }
     });
 

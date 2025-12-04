@@ -173,6 +173,7 @@ export function useHousehold() {
     currentHousehold,
     members,
     userRole,
+    isLoading: loadingHouseholds || loadingMembers,
     loadingHouseholds,
     loadingMembers,
     updateHousehold,
