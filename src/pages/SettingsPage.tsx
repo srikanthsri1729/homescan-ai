@@ -127,13 +127,26 @@ export default function SettingsPage() {
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
     try {
-      // Sign out and let Supabase handle account deletion via cascade
+      // Delete all user data first
+      if (user) {
+        // Delete user's notifications
+        await supabase.from('notifications').delete().eq('user_id', user.id);
+        // Delete user's settings
+        await supabase.from('user_settings').delete().eq('user_id', user.id);
+        // Delete user's profile
+        await supabase.from('profiles').delete().eq('user_id', user.id);
+        // Delete user's roles
+        await supabase.from('user_roles').delete().eq('user_id', user.id);
+      }
+      
+      // Sign out
       await signOut();
       toast({
         title: 'Account Deleted',
         description: 'Your account has been deleted successfully.',
       });
     } catch (error) {
+      console.error('Delete account error:', error);
       toast({
         title: 'Error',
         description: 'Failed to delete account.',
