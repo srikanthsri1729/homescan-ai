@@ -1,4 +1,4 @@
-import { Package, DollarSign, AlertTriangle, Clock } from 'lucide-react';
+import { Package, DollarSign, AlertTriangle, Clock, Loader2 } from 'lucide-react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { RecentItems } from '@/components/dashboard/RecentItems';
@@ -9,13 +9,16 @@ import { useItems } from '@/hooks/useItems';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useAuth } from '@/contexts/AuthContext';
 import { useProfile } from '@/hooks/useProfile';
-import { Loader2 } from 'lucide-react';
+import { useAINotifications } from '@/hooks/useAINotifications';
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { profile } = useProfile();
   const { items, isLoading: itemsLoading } = useItems();
   const { analytics, isLoading: analyticsLoading } = useAnalytics();
+  
+  // Trigger AI notification generation
+  useAINotifications();
 
   const isLoading = itemsLoading || analyticsLoading;
 

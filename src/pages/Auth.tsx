@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Package, Mail, Lock, User, Loader2 } from "lucide-react";
+import { Package, Mail, Lock, User, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
 const signUpSchema = z.object({
@@ -29,6 +30,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const { signUp, signIn, user, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -37,6 +39,16 @@ export default function Auth() {
       navigate("/");
     }
   }, [user, loading, navigate]);
+
+  const sendWelcomeEmail = async (userEmail: string, userName?: string) => {
+    try {
+      await supabase.functions.invoke("send-welcome-email", {
+        body: { email: userEmail, displayName: userName },
+      });
+    } catch (error) {
+      console.error("Failed to send welcome email:", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,11 +88,9 @@ export default function Auth() {
             });
           }
         } else {
-          toast({
-            title: "Welcome!",
-            description: "Your account has been created successfully.",
-          });
-          navigate("/");
+          // Send welcome email
+          await sendWelcomeEmail(email, displayName);
+          setShowConfirmation(true);
         }
       } else {
         const validation = signInSchema.safeParse({ email, password });
@@ -96,7 +106,13 @@ export default function Auth() {
 
         const { error } = await signIn(email, password);
         if (error) {
-          if (error.message.includes("Invalid login credentials")) {
+          if (error.message.includes("Email not confirmed")) {
+            toast({
+              title: "Email Not Verified",
+              description: "Please check your email and click the confirmation link to activate your account.",
+              variant: "destructive",
+            });
+          } else if (error.message.includes("Invalid login credentials")) {
             toast({
               title: "Invalid Credentials",
               description: "The email or password you entered is incorrect.",
@@ -126,6 +142,45 @@ export default function Auth() {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (showConfirmation) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-md"
+        >
+          <div className="glass rounded-2xl p-8 shadow-2xl text-center">
+            <div className="inline-flex items-center justify-center gap-2 rounded-full bg-success/10 p-4 mb-6">
+              <CheckCircle className="h-12 w-12 text-success" />
+            </div>
+            <h1 className="text-2xl font-bold mb-2">Check Your Email!</h1>
+            <p className="text-muted-foreground mb-6">
+              We've sent a confirmation link to <strong className="text-foreground">{email}</strong>. 
+              Please click the link in the email to activate your account.
+            </p>
+            <div className="bg-muted/50 rounded-lg p-4 mb-6">
+              <p className="text-sm text-muted-foreground">
+                <strong>Note:</strong> You must confirm your email before you can sign in. 
+                Check your spam folder if you don't see the email.
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                setShowConfirmation(false);
+                setIsSignUp(false);
+                setPassword("");
+              }}
+              className="w-full gradient-primary text-primary-foreground"
+            >
+              Go to Sign In
+            </Button>
+          </div>
+        </motion.div>
       </div>
     );
   }
@@ -222,7 +277,10 @@ export default function Auth() {
           <div className="mt-6 text-center">
             <button
               type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setShowConfirmation(false);
+              }}
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               {isSignUp
